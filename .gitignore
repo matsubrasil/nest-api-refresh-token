@@ -2,6 +2,10 @@
 /dist
 /node_modules
 
+.env
+/primsa/migrations/*.*
+/prisma/migrations/*/*.sql
+
 # Logs
 logs
 *.log
