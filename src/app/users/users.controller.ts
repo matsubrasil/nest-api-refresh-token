@@ -10,6 +10,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { Tokens } from '../types';
 import { CreateUserDto, UpdateUserDto } from './dto';
 
 import { UsersService } from './users.service';
@@ -29,7 +30,7 @@ export class UsersController {
   }
 
   @Post()
-  async store(@Body() body: CreateUserDto) {
+  async store(@Body() body: CreateUserDto): Promise<Tokens> {
     return await this.usersService.create(body);
   }
 
