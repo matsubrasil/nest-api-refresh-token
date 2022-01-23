@@ -1,11 +1,12 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hashData } from 'src/app/helpers';
-import { Tokens } from 'src/app/types';
+import { UserCreated } from 'src/app/types';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -83,31 +84,43 @@ export class UsersService {
     }
   }
 
-  async generateTokens(userId: string, email: string) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        { sub: userId, email },
-        {
-          secret: process.env.ACCESS_TOKEN_KEY,
-          expiresIn: 60 * 5, // 5 minutes
-        },
-      ),
-      this.jwtService.signAsync(
-        { sub: userId, email },
-        {
-          secret: process.env.REFRESH_TOKEN_KEY,
-          expiresIn: 60 * 60 * 24, // 1 day
-        },
-      ),
-    ]);
-    return { access_token: accessToken, refresh_token: refreshToken };
-  }
   /**
    *
    * @param data
-   * @returns
+   * @returns user {id, email, firstName, lastName}
    */
-  async create(data: CreateUserDto): Promise<Tokens> {
+  async create(data: CreateUserDto): Promise<UserCreated> {
+    const userAlreadyExists = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (userAlreadyExists) {
+      throw new BadRequestException('Credentials invalid');
+    }
+
+    const hasPassword = await hashData(data.password);
+
+    const userData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hasPassword,
+    };
+
+    const user = await this.prisma.user.create({
+      data: userData,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
+    return user;
+  }
+  /*
+async create(data: CreateUserDto): Promise<Tokens> {
     const hasPassword = await hashData(data.password);
 
     const userData = {
@@ -127,8 +140,10 @@ export class UsersService {
       },
     });
     const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateRefreshTokenHashUser(user.id, tokens.refresh_token);
     return tokens;
   }
+  */
 
   /**
    *
@@ -173,5 +188,27 @@ export class UsersService {
       throw new InternalServerErrorException('Delete failed');
     }
     return null;
+  }
+
+  /**
+   *
+   * @param userId
+   * @param refreshToken
+   * @return Promise<void>
+   * @description update user, crypt attribute [refreshToken] and update [hashRefreshToken]
+   */
+  async updateRefreshTokenHashUser(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
+    const hashedData = await hashData(refreshToken);
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hashRefreshToken: hashedData,
+      },
+    });
   }
 }
