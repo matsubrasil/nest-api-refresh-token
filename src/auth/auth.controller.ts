@@ -13,6 +13,7 @@ import { Tokens, UserResponse } from 'src/app/types';
 import { CreateUserDto } from 'src/app/users/dto';
 import { UsersService } from 'src/app/users/users.service';
 import { AuthService } from './auth.service';
+import { JwtPayload } from '../app/types/jwt-payload.type';
 
 @Controller('api/auth')
 export class AuthController {
@@ -42,18 +43,16 @@ export class AuthController {
     console.log('AuthController: logout: req', req.user);
     /* req.user =  {sub: string, email:string, iat: number, exp: number}
      */
-    const user = {
-      id: req.user['sub'],
-      email: req.user['email'],
-    } as UserResponse;
+    const user = req.user as JwtPayload;
 
-    return await this.authService.logout(user);
+    return await this.authService.logout(user.email);
   }
 
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh() {
-    return null;
+  async refresh(@Req() req: Request) {
+    console.log('AuthController: refresh: req', req.user);
+    return this.authService.refresh();
   }
 }

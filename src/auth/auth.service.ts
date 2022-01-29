@@ -49,8 +49,8 @@ export class AuthService {
    * @param user
    * @returns
    */
-  async logout(user: UserResponse): Promise<void> {
-    return await this.usersService.clearRefreshToken(user.email);
+  async logout(email: string): Promise<void> {
+    return await this.usersService.clearRefreshToken(email);
   }
 
   async refresh() {
