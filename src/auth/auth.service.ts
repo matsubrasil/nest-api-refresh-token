@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/app/users/users.service';
 import { compare } from 'bcrypt';
 import { Tokens, UserResponse, UserValidPassword } from 'src/app/types';
@@ -53,8 +53,36 @@ export class AuthService {
     return await this.usersService.clearRefreshToken(email);
   }
 
-  async refresh() {
-    return null;
+  /**
+   *
+   * @param email
+   * @param refreshToken
+   * @returns
+   */
+  async refresh(email: string, refreshToken: string) {
+    // console.log('AuthService : refresh', email, refreshToken);
+
+    const userExists =
+      await this.usersService.findOneOrFailEmailForRefreshToken(email);
+    if (!userExists) {
+      throw new ForbiddenException('Access Denied');
+    }
+
+    const isRefreshTokenMatch = await compare(
+      refreshToken,
+      userExists.hashRefreshToken,
+    );
+
+    if (!isRefreshTokenMatch) {
+      throw new ForbiddenException('Access Denied');
+    }
+    const tokens = await this.generateTokens(userExists.id, userExists.email);
+    await this.usersService.updateRefreshTokenHashUser(
+      userExists.id,
+      tokens.refresh_token,
+    );
+
+    return tokens;
   }
 
   /**
@@ -92,7 +120,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<UserResponse> {
     let user: UserValidPassword;
     try {
-      user = await this.usersService.findOneOrFailEmail({ email });
+      user = await this.usersService.findOneOrFailEmail(email);
       // console.log('AuthService: validateUser: user', user);
     } catch (error) {
       return null;

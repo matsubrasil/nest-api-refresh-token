@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { Tokens, UserResponse } from 'src/app/types';
+import { RefreshJwtPayload, Tokens, UserResponse } from 'src/app/types';
 import { CreateUserDto } from 'src/app/users/dto';
 import { UsersService } from 'src/app/users/users.service';
 import { AuthService } from './auth.service';
@@ -40,7 +40,7 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request) {
-    console.log('AuthController: logout: req', req.user);
+    // console.log('AuthController: logout: req', req.user);
     /* req.user =  {sub: string, email:string, iat: number, exp: number}
      */
     const user = req.user as JwtPayload;
@@ -52,7 +52,12 @@ export class AuthController {
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Req() req: Request) {
-    console.log('AuthController: refresh: req', req.user);
-    return this.authService.refresh();
+    /* req.user =  {sub: string, email:string, iat: number, exp: number, refreshToken: string}
+     */
+    // console.log('AuthController: refresh: req', req.user);
+    const user = req.user as RefreshJwtPayload;
+
+    //console.log('AuthController: refresh: user', user);
+    return this.authService.refresh(user.email, user.refreshToken);
   }
 }

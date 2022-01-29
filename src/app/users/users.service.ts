@@ -36,7 +36,7 @@ export class UsersService {
    * @param email
    * @returns
    */
-  async findOneOrFailEmail({ email }: { email: string }) {
+  async findOneOrFailEmail(email: string) {
     // console.log('UsersService:findOneOrFail:', id);
     try {
       const user = await this.prisma.user.findUnique({
@@ -45,6 +45,33 @@ export class UsersService {
           id: true,
           email: true,
           password: true,
+        },
+      });
+      //console.log('UsersService:findOneOrFail:', user);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  /**
+   *
+   * @param email
+   * @returns
+   */
+  async findOneOrFailEmailForRefreshToken(email: string) {
+    // console.log('UsersService:findOneOrFail:', id);
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          hashRefreshToken: true,
         },
       });
       //console.log('UsersService:findOneOrFail:', user);
