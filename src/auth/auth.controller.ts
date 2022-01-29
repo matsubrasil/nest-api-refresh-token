@@ -7,13 +7,16 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { Tokens, UserResponse } from 'src/app/types';
 import { CreateUserDto } from 'src/app/users/dto';
 import { UsersService } from 'src/app/users/users.service';
 import { AuthService } from './auth.service';
-import { AccessTokenGuard, RefreshTokenGuard } from 'src/app/common/guards';
+import {
+  AccessTokenGuard,
+  LocalGuard,
+  RefreshTokenGuard,
+} from 'src/app/common/guards';
 import { GetCurrentUser } from 'src/app/common/decorators';
 
 @Controller('api/auth')
@@ -23,7 +26,7 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalGuard)
   @Post('local/login')
   @HttpCode(HttpStatus.CREATED)
   async login(@Req() req: Request) {
@@ -62,13 +65,4 @@ export class AuthController {
     console.log('AuthController: refresh: ', email, refreshToken);
     return this.authService.refresh(email, refreshToken);
   }
-  // async refresh(@Req() req: Request) {
-  //   /* req.user =  {sub: string, email:string, iat: number, exp: number, refreshToken: string}
-  //    */
-  //   // console.log('AuthController: refresh: req', req.user);
-  //   const user = req.user as RefreshJwtPayload;
-
-  //   //console.log('AuthController: refresh: user', user);
-  //   return this.authService.refresh(user.email, user.refreshToken);
-  // }
 }
