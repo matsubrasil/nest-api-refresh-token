@@ -10,6 +10,8 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { Public } from '../common/decorators';
+
 import { UserCreated } from '../types';
 import { CreateUserDto, UpdateUserDto } from './dto';
 
@@ -19,6 +21,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Public()
   @Get()
   async index() {
     return this.usersService.findAll();

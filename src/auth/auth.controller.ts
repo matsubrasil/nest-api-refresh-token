@@ -12,12 +12,8 @@ import { Tokens, UserResponse } from 'src/app/types';
 import { CreateUserDto } from 'src/app/users/dto';
 import { UsersService } from 'src/app/users/users.service';
 import { AuthService } from './auth.service';
-import {
-  AccessTokenGuard,
-  LocalGuard,
-  RefreshTokenGuard,
-} from 'src/app/common/guards';
-import { GetCurrentUser } from 'src/app/common/decorators';
+import { LocalGuard, RefreshTokenGuard } from 'src/app/common/guards';
+import { GetCurrentUser, Public } from 'src/app/common/decorators';
 
 @Controller('api/auth')
 export class AuthController {
@@ -26,6 +22,7 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  @Public()
   @UseGuards(LocalGuard)
   @Post('local/login')
   @HttpCode(HttpStatus.CREATED)
@@ -34,13 +31,13 @@ export class AuthController {
     return await this.authService.login(user);
   }
 
+  @Public()
   @Post('/local/signup')
   @HttpCode(HttpStatus.OK)
   async signupLocal(@Body() body: CreateUserDto): Promise<Tokens> {
     return await this.authService.signup(body);
   }
 
-  @UseGuards(AccessTokenGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
   //async logout(@Req() req: Request) {
@@ -55,6 +52,7 @@ export class AuthController {
     return await this.authService.logout(email);
   }
 
+  @Public()
   @UseGuards(RefreshTokenGuard)
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)

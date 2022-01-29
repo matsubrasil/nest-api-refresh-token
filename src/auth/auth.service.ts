@@ -65,7 +65,8 @@ export class AuthService {
 
     const userExists =
       await this.usersService.findOneOrFailEmailForRefreshToken(email);
-    if (!userExists) {
+
+    if (!userExists || !userExists.hashRefreshToken) {
       throw new ForbiddenException('Access Denied');
     }
 
