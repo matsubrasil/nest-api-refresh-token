@@ -14,6 +14,7 @@ import { CreateUserDto } from 'src/app/users/dto';
 import { UsersService } from 'src/app/users/users.service';
 import { AuthService } from './auth.service';
 import { JwtPayload } from '../app/types/jwt-payload.type';
+import { AccessTokenGuard, RefreshTokenGuard } from 'src/app/common/guards';
 
 @Controller('api/auth')
 export class AuthController {
@@ -36,7 +37,7 @@ export class AuthController {
     return await this.authService.signup(body);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AccessTokenGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request) {
@@ -48,7 +49,7 @@ export class AuthController {
     return await this.authService.logout(user.email);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(RefreshTokenGuard)
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Req() req: Request) {
