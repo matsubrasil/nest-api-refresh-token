@@ -190,6 +190,15 @@ async create(data: CreateUserDto): Promise<Tokens> {
     return null;
   }
 
+  async clearRefreshToken(email: string): Promise<void> {
+    await this.prisma.user.updateMany({
+      where: { email },
+      data: {
+        hashRefreshToken: null,
+      },
+    });
+  }
+
   /**
    *
    * @param userId

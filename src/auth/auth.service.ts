@@ -13,26 +13,20 @@ export class AuthService {
   ) {}
 
   /**
-   * @param email
-   * @param password
-   * @returns {{id: number, email: string}}
+   *
+   * @param data: CreateUserDto
+   * @return tokens {access_token, refresh_token}
+   * @description add user with crypt password and refresh token
    */
-  async validateUser(email: string, password: string): Promise<UserResponse> {
-    let user: UserValidPassword;
-    try {
-      user = await this.usersService.findOneOrFailEmail({ email });
-      // console.log('AuthService: validateUser: user', user);
-    } catch (error) {
-      return null;
-    }
+  async signup(data: CreateUserDto): Promise<Tokens> {
+    const user = await this.usersService.create(data);
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.usersService.updateRefreshTokenHashUser(
+      user.id,
+      tokens.refresh_token,
+    );
 
-    const isPasswordValid = await compare(password, user.password);
-    // console.log('AuthService: validateUser: isPasswordValid', isPasswordValid);
-    if (!isPasswordValid) {
-      return null;
-    }
-    const data = { id: user.id, email: user.email };
-    return data;
+    return tokens;
   }
 
   /**
@@ -49,37 +43,18 @@ export class AuthService {
 
     return tokens;
   }
-  /*
-  async login(user: UserResponse): Promise<{ token: string }> {
-    const payload = {
-      sub: user.id,
-      email: user.email,
-    };
-    const token = this.jwtService.sign(payload, {
-      secret: process.env.ACCESS_TOKEN_KEY,
-      expiresIn: 60 * 5,
-    });
-
-    return {
-      token,
-    };
-  }
-   */
 
   /**
    *
-   * @param data: CreateUserDto
-   * @return tokens {access_token, refresh_token}
+   * @param user
+   * @returns
    */
-  async signup(data: CreateUserDto): Promise<Tokens> {
-    const user = await this.usersService.create(data);
-    const tokens = await this.generateTokens(user.id, user.email);
-    await this.usersService.updateRefreshTokenHashUser(
-      user.id,
-      tokens.refresh_token,
-    );
+  async logout(user: UserResponse): Promise<void> {
+    return await this.usersService.clearRefreshToken(user.email);
+  }
 
-    return tokens;
+  async refresh() {
+    return null;
   }
 
   /**
@@ -107,5 +82,28 @@ export class AuthService {
       ),
     ]);
     return { access_token: accessToken, refresh_token: refreshToken };
+  }
+
+  /**
+   * @param email
+   * @param password
+   * @returns {{id: number, email: string}}
+   */
+  async validateUser(email: string, password: string): Promise<UserResponse> {
+    let user: UserValidPassword;
+    try {
+      user = await this.usersService.findOneOrFailEmail({ email });
+      // console.log('AuthService: validateUser: user', user);
+    } catch (error) {
+      return null;
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+    // console.log('AuthService: validateUser: isPasswordValid', isPasswordValid);
+    if (!isPasswordValid) {
+      return null;
+    }
+    const data = { id: user.id, email: user.email };
+    return data;
   }
 }
