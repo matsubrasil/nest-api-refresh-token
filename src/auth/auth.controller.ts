@@ -48,7 +48,7 @@ export class AuthController {
     //const user = req.user as JwtPayload;
 
     //return await this.authService.logout(user.email);
-    console.log('AuthController: logout: ', email);
+    // console.log('AuthController: logout: ', email);
     return await this.authService.logout(email);
   }
 
@@ -60,7 +60,7 @@ export class AuthController {
     @GetCurrentUser('email') email: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
   ) {
-    console.log('AuthController: refresh: ', email, refreshToken);
+    // console.log('AuthController: refresh: ', email, refreshToken);
     return this.authService.refresh(email, refreshToken);
   }
 }

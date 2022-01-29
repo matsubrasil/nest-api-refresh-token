@@ -47,7 +47,7 @@ export class UsersService {
           password: true,
         },
       });
-      //console.log('UsersService:findOneOrFail:', user);
+      // console.log('UsersService:findOneOrFail:', user);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -74,7 +74,7 @@ export class UsersService {
           hashRefreshToken: true,
         },
       });
-      //console.log('UsersService:findOneOrFail:', user);
+      // console.log('UsersService:findOneOrFail:', user);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -101,7 +101,7 @@ export class UsersService {
           lastName: true,
         },
       });
-      //console.log('UsersService:findOneOrFail:', user);
+      // console.log('UsersService:findOneOrFail:', user);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -218,7 +218,7 @@ async create(data: CreateUserDto): Promise<Tokens> {
   }
 
   async clearRefreshToken(email: string): Promise<void> {
-    console.log('UsersService : clearRefreshToken : email', email);
+    // console.log('UsersService : clearRefreshToken : email', email);
     await this.prisma.user.updateMany({
       where: { email },
       data: {

@@ -13,7 +13,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload) {
-    console.log('AccessTokenStrategy: payload', payload);
+    // console.log('AccessTokenStrategy: payload', payload);
     return payload;
     // por baixo do pano req.user = payload
   }
