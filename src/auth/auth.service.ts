@@ -50,6 +50,7 @@ export class AuthService {
    * @returns
    */
   async logout(email: string): Promise<void> {
+    console.log('AuthService: logout: email', email);
     return await this.usersService.clearRefreshToken(email);
   }
 
